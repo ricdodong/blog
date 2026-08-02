@@ -1,16 +1,15 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, fontProviders } from 'astro/config'; // 1. Import fontProviders
 import react from '@astrojs/react';
 import mdx from '@astrojs/mdx';
 import tailwindcss from '@tailwindcss/vite';
 
 export default defineConfig({
-  // Configure Astro's built-in font loader here:
   fonts: [
     {
-      provider: 'google', // or 'fontsource'
+      provider: fontProviders.google(), // 2. Use fontProviders.google()
       name: 'Atkinson Hyperlegible',
-      cssVariable: '--font-atkinson', // <--- Must match what you passed to <Font cssVariable="..." />
+      cssVariable: '--font-atkinson',
     },
   ],
   integrations: [react(), mdx()],
