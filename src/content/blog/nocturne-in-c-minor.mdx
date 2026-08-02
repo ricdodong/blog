@@ -1,26 +1,56 @@
 ---
-title: "Nocturne in C Minor - Solo Piano & Studio Sessions"
-description: "A original piano piece inspired by late-night studio sessions, complete with MusicXML sheet music and photo logs."
-pubDate: 2026-08-01
-track:
-  title: "Nocturne in C Minor"
-  artist: "Your Name"
-  src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"
-  cover: "https://picsum.photos/id/1082/300/300"
-sheetMusicUrl: "https://raw.githubusercontent.com/opensheetmusicdisplay/opensheetmusicdisplay/master/test/data/MuzioClementi_SonatinaOp36No1_Part1.xml"
-gallery:
-  - src: "https://picsum.photos/id/1082/1200/800"
-    alt: "Grand Piano setup"
-    title: "Recording setup for the Nocturne"
-  - src: "https://picsum.photos/id/1025/1200/800"
-    alt: "Studio monitors"
-    title: "Mixing monitor stage"
-  - src: "https://picsum.photos/id/1069/1200/800"
-    alt: "Sheet music drafts"
-    title: "Handwritten draft copy"
+// src/pages/blog/[...slug].astro (or src/layouts/BlogPost.astro)
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+// Import your custom interactive components
+import PlayButton from '../../components/PlayButton';
+import PianoSheet from '../../components/PianoSheet';
+import MediaGallery from '../../components/MediaGallery';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: post,
+  }));
+}
+
+const post = Astro.props;
+const { Content } = await render(post);
+
+// Extract frontmatter fields
+const { title, description, track, sheetMusicUrl, gallery } = post.data;
 ---
 
-I wrote this nocturne over three consecutive late-night sessions. The goal was to build a rich harmonic progression that feels intimate yet expansive on a grand piano.
+<Layout title={title} description={description}>
+  <article>
+    <h1>{title}</h1>
 
-### Recording Setup
-We recorded this using a pair of small diaphragm condenser microphones positioned right above the hammers for clarity, paired with room ambient mics for depth.
+    <!-- 1. Render Audio Track / Play Button -->
+    {track && (
+      <div class="my-6">
+        <PlayButton client:load track={track} />
+      </div>
+    )}
+
+    <!-- 2. Main MDX Body Content -->
+    <Content />
+
+    <!-- 3. Render Interactive MusicXML Sheet Music -->
+    {sheetMusicUrl && (
+      <section class="my-8">
+        <h2>Sheet Music</h2>
+        <PianoSheet client:only="react" url={sheetMusicUrl} />
+      </section>
+    )}
+
+    <!-- 4. Render Photo Gallery -->
+    {gallery && gallery.length > 0 && (
+      <section class="my-8">
+        <h2>Studio Gallery</h2>
+        <MediaGallery client:load images={gallery} />
+      </section>
+    )}
+  </article>
+</Layout>
