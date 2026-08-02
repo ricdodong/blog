@@ -1,0 +1,64 @@
+---
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import PlayButton from '../../components/PlayButton';
+import PianoSheet from '../../components/PianoSheet';
+import MediaGallery from '../../components/MediaGallery';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog');
+  
+  return posts.map((post) => {
+    const slug = post.slug || post.id.replace(/\.(md|mdx)$/, '');
+    return {
+      params: { slug },
+      props: { post },
+    };
+  });
+}
+
+const { post } = Astro.props;
+
+// Modern Astro Content API rendering
+const { Content } = await render(post);
+---
+
+<BaseLayout title={`${post.data.title} | Studio Blog`} description={post.data.description}>
+  <article class="space-y-8">
+    <header class="space-y-4 border-b border-zinc-800/80 pb-8">
+      <time class="text-xs text-zinc-500 font-mono uppercase tracking-wider">
+        {post.data.pubDate.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+      </time>
+
+      <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight text-zinc-100">
+        {post.data.title}
+      </h1>
+
+      <p class="text-lg text-zinc-400">{post.data.description}</p>
+
+      {post.data.track && (
+        <div class="pt-2">
+          <PlayButton client:load track={post.data.track} />
+        </div>
+      )}
+    </header>
+
+    <div class="prose prose-invert max-w-none prose-p:text-zinc-300 prose-headings:text-zinc-100">
+      <Content />
+    </div>
+
+    {post.data.sheetMusicUrl && (
+      <section class="space-y-3 pt-6">
+        <h2 class="text-2xl font-bold tracking-tight text-zinc-100">Piano Score</h2>
+        <PianoSheet client:visible fileUrl={post.data.sheetMusicUrl} />
+      </section>
+    )}
+
+    {post.data.gallery && post.data.gallery.length > 0 && (
+      <section class="space-y-3 pt-6">
+        <h2 class="text-2xl font-bold tracking-tight text-zinc-100">Photo & Video Gallery</h2>
+        <MediaGallery client:visible items={post.data.gallery} />
+      </section>
+    )}
+  </article>
+</BaseLayout>
